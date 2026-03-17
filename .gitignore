@@ -1,0 +1,23 @@
+# Terraform directories
+.terraform/
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Variable files (often contain secrets)
+terraform.tfvars
+*.tfvars
+
+# Crash logs
+crash.log
+crash.*.log
+
+# CLI logs
+*.log
+
+# OS / Editor noise
+.DS_Store
+.vscode/
+.idea/
+``
