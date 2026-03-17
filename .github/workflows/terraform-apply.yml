@@ -20,19 +20,16 @@ jobs:
 
       TF_VAR_location: eastus
       TF_VAR_resource_group_name: rg-platform-management
-
-      # Optional: FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      TF_VAR_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.7.0
 
-      - name: Terraform init (remote backend)
+      - name: Terraform init
         run: terraform init -reconfigure -backend-config backend.hcl
 
       - name: Terraform apply
