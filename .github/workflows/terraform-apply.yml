@@ -7,16 +7,24 @@ jobs:
   apply:
     runs-on: ubuntu-latest
     environment: production
+
     env:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
-    steps:
-      - uses: actions/checkout@v4
+      TF_VAR_location: eastus
+      TF_VAR_resource_group_name: rg-platform-management
 
-      - uses: hashicorp/setup-terraform@v3
+      # Optional: FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.7.0
 
@@ -24,4 +32,4 @@ jobs:
         run: terraform init -reconfigure -backend-config backend.hcl
 
       - name: Terraform apply
-        run: terraform apply -lock-timeout=5m -auto-approve
+        run: terraform apply -lock-timeout=5m -input=false -auto-approve

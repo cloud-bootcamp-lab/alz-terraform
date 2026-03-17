@@ -2,18 +2,25 @@ name: Terraform - PR Plan
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: ["main"]
 
 jobs:
   plan:
     runs-on: ubuntu-latest
 
     env:
+      # Azure auth for Terraform (GitHub Secrets)
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+      # Required Terraform variables (prevents prompting/hanging)
+      TF_VAR_location: eastus
+      TF_VAR_resource_group_name: rg-platform-management
+
+      # Optional: silence Node20 deprecation warning by opting into Node24 now
+      # FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     steps:
       - name: Checkout
@@ -24,11 +31,25 @@ jobs:
         with:
           terraform_version: 1.7.0
 
-      - name: Terraform Init (remote backend)
+      # Optional but highly recommended: fail fast if tenant/client IDs are malformed
+      - name: Debug ARM variables (safe)
+        shell: bash
+        run: |
+          echo "ARM_TENANT_ID length=${#ARM_TENANT_ID}"
+          echo "ARM_SUBSCRIPTION_ID length=${#ARM_SUBSCRIPTION_ID}"
+          echo "ARM_CLIENT_ID length=${#ARM_CLIENT_ID}"
+          echo "ARM_CLIENT_SECRET length=${#ARM_CLIENT_SECRET}"
+          echo "$ARM_TENANT_ID" | grep -Eq '^[0-9a-fA-F-]{36}$' && echo "TENANT_ID looks like GUID" || (echo "TENANT_ID invalid" && exit 1)
+          echo "$ARM_CLIENT_ID" | grep -Eq '^[0-9a-fA-F-]{36}$' && echo "CLIENT_ID looks like GUID" || (echo "CLIENT_ID invalid" && exit 1)
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init (remote backend)
         run: terraform init -reconfigure -backend-config backend.hcl
 
-      - name: Terraform Validate
+      - name: Terraform validate
         run: terraform validate
 
-      - name: Terraform Plan
-        run: terraform plan -lock-timeout=5m
+      - name: Terraform plan
+        run: terraform plan -lock-timeout=5m -input=false

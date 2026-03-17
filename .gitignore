@@ -16,8 +16,7 @@ crash.*.log
 # CLI logs
 *.log
 
-# OS / Editor noise
+# OS / Editor
 .DS_Store
 .vscode/
 .idea/
-``
