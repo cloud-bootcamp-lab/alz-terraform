@@ -1,5 +1,9 @@
 name: Terraform - Apply (Manual)
 
+concurrency:
+  group: terraform-state
+  cancel-in-progress: false
+
 on:
   workflow_dispatch:
 
@@ -32,4 +36,4 @@ jobs:
         run: terraform init -reconfigure -backend-config backend.hcl
 
       - name: Terraform apply
-        run: terraform apply -lock-timeout=5m -input=false -auto-approve
+        run: terraform apply -lock-timeout=10m -input=false -auto-approve

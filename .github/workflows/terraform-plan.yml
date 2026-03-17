@@ -1,5 +1,9 @@
 name: Terraform - PR Plan
 
+concurrency:
+  group: terraform-state
+  cancel-in-progress: false
+
 on:
   pull_request:
     branches: ["main"]
@@ -9,17 +13,17 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Azure auth for Terraform (GitHub Secrets)
+      # Azure auth for Terraform (Repository Secrets)
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
-      # Required Terraform variables (prevents prompting/hanging)
+      # Required Terraform variables (prevents prompt/hang in CI)
       TF_VAR_location: eastus
       TF_VAR_resource_group_name: rg-platform-management
 
-      # Optional: silence Node20 deprecation warning by opting into Node24 now
+      # Optional: opt into Node.js 24 now to avoid future runner warnings
       # FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     steps:
@@ -31,7 +35,6 @@ jobs:
         with:
           terraform_version: 1.7.0
 
-      # Optional but highly recommended: fail fast if tenant/client IDs are malformed
       - name: Debug ARM variables (safe)
         shell: bash
         run: |
@@ -52,4 +55,4 @@ jobs:
         run: terraform validate
 
       - name: Terraform plan
-        run: terraform plan -lock-timeout=5m -input=false
+        run: terraform plan -lock-timeout=10m -input=false
