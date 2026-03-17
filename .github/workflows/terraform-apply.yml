@@ -1,0 +1,39 @@
+name: Terraform - Apply (Manual)
+
+concurrency:
+  group: terraform-state
+  cancel-in-progress: false
+
+on:
+  workflow_dispatch:
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    environment: production
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+      TF_VAR_location: eastus
+      TF_VAR_resource_group_name: rg-platform-management
+
+      # Optional: FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.0
+
+      - name: Terraform init (remote backend)
+        run: terraform init -reconfigure -backend-config backend.hcl
+
+      - name: Terraform apply
+        run: terraform apply -lock-timeout=10m -input=false -auto-approve
