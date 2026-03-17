@@ -2,7 +2,8 @@ name: Terraform - PR Plan
 
 on:
   pull_request:
-    branches: ["main"]
+    branches:
+      - main
 
 jobs:
   plan:
@@ -15,7 +16,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Terraform
